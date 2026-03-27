@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Web App PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#030b14">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Khaleel Raza | Pro App & Web Developer</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        tech: ['Rajdhani', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        neon: '#00f3ff',
+                        dark: '#030b14',
+                        hud: 'rgba(0, 243, 255, 0.1)',
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 2s infinite',
+                        'scanline': 'scanline 8s linear infinite',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '1', boxShadow: '0 0 10px rgba(0,243,255,0.2)' },
+                            '50%': { opacity: '0.8', boxShadow: '0 0 25px rgba(0,243,255,0.6)' },
+                        },
+                        scanline: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(100vh)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom CSS (Iron Man Lab HUD Vibe) -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+        
+        body { 
+            background-color: #030b14; 
+            color: #e2e8f0; 
+            font-family: 'Inter', sans-serif; 
+            scroll-behavior: smooth; 
+            overflow-x: hidden;
+        }
+
+        /* Tech Grid & Scanline Background */
+        .bg-tech-grid {
+            position: absolute;
+            inset: 0;
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            z-index: -2;
+        }
+
+        .screen-scanline {
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, rgba(0, 243, 255, 0.2), transparent);
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Iron Man Click Ripple Effect */
+        .hud-click-ripple {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(0, 243, 255, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            animation: rippleAnim 0.6s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+            z-index: 9999;
+        }
+        .hud-click-ripple::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            border: 1px dotted rgba(0, 243, 255, 0.5);
+            border-radius: 50%;
+        }
+
+        @keyframes rippleAnim {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; box-shadow: 0 0 10px #00f3ff, inset 0 0 10px #00f3ff; }
+            100% { transform: translate(-50%, -50%) scale(6); opacity: 0; box-shadow: 0 0 50px #00f3ff, inset 0 0 50px #00f3ff; }
+        }
+
+        /* Glass HUD Elements */
+        .hud-panel {
+            background: rgba(3, 11, 20, 0.8);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.05), inset 0 0 10px rgba(0, 243, 255, 0.02);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .hud-panel::before {
+            content: '';
+            position: absolute;
+            top: -1px; left: -1px;
+            width: 20px; height: 20px;
+            border-top: 2px solid #00f3ff;
+            border-left: 2px solid #00f3ff;
+            opacity: 0.7;
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .hud-panel::after {
+            content: '';
+            position: absolute;
+            bottom: -1px; right: -1px;
+            width: 20px; height: 20px;
+            border-bottom: 2px solid #00f3ff;
+            border-right: 2px solid #00f3ff;
+            opacity: 0.7;
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .hud-panel:hover {
+            border-color: rgba(0, 243, 255, 0.6);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.1);
+            transform: translateY(-3px);
+            cursor: pointer;
+        }
+        .hud-panel:hover::before, .hud-panel:hover::after {
+            width: 40px; height: 40px;
+        }
+
+        /* Crypto Chart Animation */
+        @keyframes cryptoRise {
+            0% { transform: scaleY(0); opacity: 0; }
+            100% { transform: scaleY(1); opacity: 1; }
+        }
+        .crypto-candle {
+            opacity: 0;
+            transform-origin: bottom;
+        }
+
+        .text-neon {
+            color: #00f3ff;
+            text-shadow: 0 0 10px rgba(0,243,255,0.4);
+        }
+
+        /* Tech Tags Sector */
+        .tech-tag {
+            background: rgba(3, 11, 20, 0.9);
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            color: #00f3ff;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.05);
+            cursor: default;
+        }
+        .tech-tag:hover {
+            background: rgba(0, 243, 255, 0.1);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            transform: scale(1.05);
+            border-color: #00f3ff;
+            color: white;
+        }
+
+        /* Modal Transitions */
+        .modal-active { display: flex !important; }
+
+        /* Data Readout styles */
+        .data-readout {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.7rem;
+            color: rgba(0, 243, 255, 0.6);
+            position: absolute;
+            pointer-events: none;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #030b14; border-left: 1px solid rgba(0,243,255,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 243, 255, 0.3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 243, 255, 0.6); }
+
+        /* Splash Screen */
+        #splash-screen {
+            background-color: #030b14;
+        }
+
+        /* Professional Staggered Entrance Animations */
+        .assemble-element {
+            opacity: 0;
+            transform: translateY(60px) scale(0.95);
+            transition: opacity 0.8s cubic-bezier(0.1, 0.9, 0.2, 1), transform 0.8s cubic-bezier(0.1, 0.9, 0.2, 1);
+            will-change: opacity, transform;
+        }
+
+        .assemble-element.in-view {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        /* Drop From Above Animation */
+        .drop-element {
+            opacity: 0;
+            transform: translateY(-150px) scale(0.9);
+            transition: opacity 1s cubic-bezier(0.34, 1.56, 0.64, 1), transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+            will-change: opacity, transform;
+        }
+        .drop-element.in-view {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Heavy Drop Animation specifically for Hello Bro */
+        .drop-heavy-element {
+            opacity: 0;
+            transform: translateY(-800px) scale(1.05);
+            transition: opacity 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28), transform 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+            will-change: opacity, transform;
+        }
+        .drop-heavy-element.in-view {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Continuous drag spinner class */
+        .draggable-spinner {
+            cursor: grab;
+            transform-style: preserve-3d;
+            perspective: 1200px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .draggable-spinner:active {
+            cursor: grabbing;
+        }
+
+        /* 3D Spin Hover Effect */
+        .spin-card-hover {
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        .spin-card-hover:hover {
+            transform: rotateY(360deg);
+            z-index: 20;
+            border-color: #00f3ff;
+            box-shadow: 0 0 30px rgba(0,243,255,0.2);
+        }
+
+        /* Top elements load naturally on click */
+        .site-active .natural-load {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* HUD Circle Animations for Splash */
+        .hud-circle {
+            position: absolute;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .hud-circle-1 { width: 350px; height: 350px; border: 1px solid rgba(0, 243, 255, 0.1); border-top: 3px solid #00f3ff; animation: spin 4s linear infinite; }
+        .hud-circle-2 { width: 500px; height: 500px; border: 1px dashed rgba(0, 243, 255, 0.2); border-bottom: 3px solid #00f3ff; animation: spin 8s linear infinite reverse; }
+        .hud-circle-3 { width: 750px; height: 750px; border: 2px dotted rgba(0, 243, 255, 0.1); border-left: 4px solid rgba(0,243,255,0.6); border-right: 4px solid rgba(0,243,255,0.6); animation: spin 12s linear infinite; }
+        .hud-crosshair { width: 900px; height: 900px; background: conic-gradient(from 0deg, transparent 40%, rgba(0, 243, 255, 0.1) 45%, rgba(0, 243, 255, 0.4) 50%, rgba(0, 243, 255, 0.1) 55%, transparent 60%); animation: radarSpin 5s linear infinite; }
+        
+        /* Professional HUD Tech Button */
+        .btn-hud {
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            background: rgba(0, 243, 255, 0.05);
+            position: relative;
+        }
+        .btn-hud::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, transparent 20px, rgba(0,243,255,0.2) 20px, rgba(0,243,255,0.2) calc(100% - 20px), transparent calc(100% - 20px));
+            z-index: -1;
+            transition: all 0.3s ease;
+            opacity: 0;
+        }
+        .btn-hud:hover::before {
+            opacity: 1;
+        }
+        .btn-hud-border {
+            position: absolute;
+            inset: 0;
+            border-left: 2px solid #00f3ff;
+            border-right: 2px solid #00f3ff;
+            pointer-events: none;
+        }
+        .btn-hud-border::before, .btn-hud-border::after {
+            content: '';
+            position: absolute;
+            height: 2px;
+            background: #00f3ff;
+        }
+        .btn-hud-border::before { top: 0; left: 20px; right: 0; }
+        .btn-hud-border::after { bottom: 0; left: 0; right: 20px; }
+
+        .hud-hex-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 104L0 86.603V51.962l30-17.32 30 17.32v34.64L30 104zm0-2L58 85.45V53.116L30 36.942 2 53.116v32.333L30 102zM30 52l-28-16v-32L30-12l28 16v32L30 52zm0-2l26-15V4L30-10.942 4 4v31L30 50z' fill='%2300f3ff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.15;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        /* Data Rain for Splash Screen */
+        .hud-data-rain {
+            position: absolute;
+            top: 5%;
+            width: 250px;
+            height: 90%;
+            overflow: hidden;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.65rem;
+            color: rgba(0, 243, 255, 0.6);
+            line-height: 1.4;
+            mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+            opacity: 0.7;
+            z-index: 2;
+        }
+        .rain-left { left: 2%; text-shadow: 0 0 5px #00f3ff; }
+        .rain-right { right: 2%; text-align: right; text-shadow: 0 0 5px #00f3ff; }
+        .rain-content {
+            position: absolute;
+            top: -100%;
+            animation: rainDrop 10s linear infinite;
+        }
+        @keyframes rainDrop {
+            100% { top: 100%; }
+        }
+
+        @keyframes radarSpin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        @keyframes spin {
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        /* Glitch Hacker Text Class */
+        .hacker-cypher {
+            position: relative;
+            display: inline-block;
+        }
+        .hacker-cypher::before {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            text-shadow: 2px 0 blue;
+            top: 0;
+            color: white;
+            background: #030b14;
+            overflow: hidden;
+            clip: rect(0,900px,0,0); 
+            animation: noise-anim 2s infinite linear alternate-reverse;
+        }
+        @keyframes noise-anim {
+            0% { clip: rect(3px,9999px,14px,0); }
+            10% { clip: rect(25px,9999px,67px,0); }
+            20% { clip: rect(84px,9999px,11px,0); }
+            30% { clip: rect(4px,9999px,90px,0); }
+            40% { clip: rect(35px,9999px,42px,0); }
+            50% { clip: rect(65px,9999px,21px,0); }
+            60% { clip: rect(10px,9999px,82px,0); }
+            70% { clip: rect(55px,9999px,3px,0); }
+            80% { clip: rect(89px,9999px,52px,0); }
+            90% { clip: rect(15px,9999px,94px,0); }
+            100% { clip: rect(73px,9999px,36px,0); }
+        }
+    </style>
+</head>
+<body class="relative min-h-screen overflow-hidden">
+
+    <!-- Welcome / Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-700 ease-in-out">
+        <div class="bg-tech-grid opacity-80"></div>
+        <div class="hud-hex-bg"></div>
+        
+        <!-- Animated HUD Background Rings & Radar -->
+        <div class="hud-circle hud-crosshair mix-blend-screen opacity-50"></div>
+        <div class="hud-circle hud-circle-1"></div>
+        <div class="hud-circle hud-circle-2"></div>
+        <div class="hud-circle hud-circle-3"></div>
+
+        <!-- Data Rain -->
+        <div class="hud-data-rain rain-left hidden md:block">
+            <div class="rain-content" style="animation-duration: 6s;">
+                // COMPILE SEQUENCE <br>01101000<br>01100101<br>01101100<br>SYS.CHK_OK<br>...<br>import { AI } from 'core';<br>01101100<br>01101111<br>NET: SECURE<br>...<br>function buildApp() {<br>00100000<br>MEM.ALLOC<br>OK<br>01100010<br>...<br>01110010<br>01101111
+            </div>
+        </div>
+        <div class="hud-data-rain rain-right hidden md:block">
+            <div class="rain-content" style="animation-duration: 8s; animation-delay: 1s;">
+                TARGET_LOCK<br>SYNC_RATE:99<br>...<br>01010101<br>10101010<br>OK<br>&lt;html lang="en"&gt;<br>INIT_BOOT<br>...<br>const db = useDatabase();<br>00100000<br>11001100<br>11110000<br>...<br>JARVIS_LINK
+            </div>
+        </div>
+
+        <!-- Glowing Core Background -->
+        <div class="absolute w-[600px] h-[600px] bg-cyan-600/10 rounded-full blur-[100px] pointer-events-none -z-10 animate-pulse-glow"></div>
+        
+        <!-- Welcome Messages -->
+        <div class="relative z-10 text-center px-6 mt-4">
+            <h2 class="text-[10px] md:text-xs font-mono text-neon mb-4 tracking-[0.4em] uppercase opacity-90"><i class="fas fa-terminal"></i> Terminal Ready. System Secured.</h2>
+            <h1 class="text-xl md:text-2xl font-tech font-bold text-slate-300 mb-1 tracking-widest uppercase tran" data-en="WELCOME TO" data-hi="AAPKA WELCOME HAI">
+                WELCOME TO
+            </h1>
+            <h1 class="text-4xl md:text-5xl font-tech font-bold mb-6 tracking-widest uppercase text-shadow-neon mt-2">
+                <!-- Glitch/Hacker Class Added. The JS will also decrypt this -->
+                <span id="hacker-name" class="hacker-cypher text-neon drop-shadow-[0_0_15px_rgba(0,243,255,0.7)]" data-text="KHALEEL RAZA'S">XX##$$@@**&&%</span>
+            </h1>
+            <h2 class="text-[0.6rem] md:text-xs font-mono text-emerald-400 mb-8 tracking-[0.2em] uppercase bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-sm inline-block">
+                > APP/WEB DEVELOPMENT && DIGITAL_ARCHITECT
+            </h2>
+            
+            <div class="mt-2">
+                <button onclick="enterPortfolio()" class="btn-hud group px-10 py-4 text-neon font-tech font-bold text-sm md:text-base tracking-[0.2em] uppercase transition-all hover:text-white hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] inline-flex items-center justify-center gap-3 w-auto mx-auto border-none">
+                    <div class="btn-hud-border"></div>
+                    <span class="tran" data-en="ENGAGE SYSTEM" data-hi="SYSTEM SHURU KAREIN">ENGAGE SYSTEM</span>
+                    <i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Bottom loading bar -->
+        <div class="absolute bottom-10 w-80 h-1 bg-slate-800 rounded-full overflow-hidden border border-neon/20">
+            <div class="h-full bg-neon w-full animate-[pulse_1s_ease-in-out_infinite]"></div>
+        </div>
+        <div class="absolute bottom-4 font-mono text-[10px] text-neon/40 tracking-widest">LOADING ASSETS [||||||||||||||||||||] 100%</div>
+    </div>
+
+    <!-- Scanline effect -->
+    <div class="screen-scanline animate-scanline"></div>
+
+    <div class="bg-tech-grid"></div>
+    <!-- Glowing core in background -->
+    <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-sky-500/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
+
+    <a href="https://wa.me/919652241650?text=Hello%20Khaleel%20Sir%2C%0A%0AI%20saw%20your%20amazing%20portfolio%20and%20I%20want%20to%20develop%20a%20professional%20website%2Fapp%20for%20my%20business.%0A%0AAre%20you%20free%20to%20discuss%3F" class="float-wa" target="_blank" aria-label="Chat on WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Navbar (HUD Style) -->
+    <nav class="fixed w-full z-40 bg-dark/80 backdrop-blur-md border-b border-neon/30 py-4 px-6 md:px-10 flex justify-between items-center shadow-[0_4px_30px_rgba(0,243,255,0.1)] assemble-element natural-load" style="transition-delay: 0.2s;">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 border border-neon rounded flex items-center justify-center font-tech font-bold text-neon text-xl animate-pulse-glow bg-neon/10 cursor-pointer">
+                KR
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-xl font-tech font-bold text-white tracking-widest uppercase">KHALEEL <span class="text-neon">RAZA</span></h1>
+                <span class="text-[10px] font-mono text-neon/60 tracking-[0.2em]">NETWORK.ONLINE</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-6">
+            <div class="hidden md:flex space-x-6 text-xs font-tech tracking-[0.1em] text-slate-300 uppercase">
+                <!-- Cleaned up labels as requested -->
+                <a href="#about" class="hover:text-neon transition-colors tran" data-en="ABOUT" data-hi="MERE.BAARE">ABOUT</a>
+                <a href="#projects" class="hover:text-neon transition-colors tran" data-en="PORTFOLIO" data-hi="MERA.KAAM">PORTFOLIO</a>
+                <a href="#industries" class="hover:text-neon transition-colors tran" data-en="INDUSTRIES" data-hi="DUKAANEIN">INDUSTRIES</a>
+            </div>
+            
+            <!-- Language Toggle Button -->
+            <button id="langToggle" onclick="toggleLanguage()" class="flex items-center gap-2 bg-dark hover:bg-neon/10 border border-neon text-white px-4 py-2 rounded font-tech text-xs tracking-widest uppercase transition-all shadow-[0_0_10px_rgba(0,243,255,0.2)]">
+                <i class="fas fa-satellite-dish text-neon animate-pulse"></i>
+                <span id="langText">ENGLISH</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="about" class="min-h-screen flex flex-col justify-center px-6 pt-28 pb-12 relative max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-12 items-center">
+            
+            <div class="relative z-10 assemble-element natural-load" style="transition-delay: 0.4s;">
+                <div class="data-readout top-[-30px] left-0">INIT.SEQUENCE // VER.4.9.0 // STANDBY</div>
+                
+                <div class="inline-flex items-center gap-3 border border-neon/50 bg-neon/10 text-neon text-xs font-tech py-2 px-4 rounded mb-8 uppercase tracking-[0.3em] backdrop-blur-sm shadow-[0_0_10px_rgba(0,243,255,0.2)] hover:bg-neon/20 transition-colors cursor-default">
+                    <span class="w-2 h-2 bg-neon rounded-full animate-pulse-glow"></span>
+                    <span class="tran" data-en="Systems Online & Ready" data-hi="Systems Online Aur Ready Hai">Systems Online & Ready</span>
+                </div>
+                
+                <h2 class="text-5xl md:text-7xl font-tech font-bold mb-6 leading-tight text-white tracking-tight uppercase">
+                    PRO APP & <br>
+                    <span class="text-neon text-shadow-neon">WEB ARCHITECT.</span>
+                </h2>
+                
+                <p class="text-lg text-slate-400 mb-10 font-light max-w-xl tran font-mono text-sm leading-relaxed"
+                   data-en="> Digitize your business to unlock extreme growth. I architect high-performance, professional Websites and native Mobile Applications (Android/iOS). Reduce manual overhead, capture online customers, and scale securely."
+                   data-hi="> Apne business ko digital banayein aur uski growth ko double karein. Main ekdum professional Apps aur Websites banata hoon jis se aapki sale badhti hai aur manual kaam khatam hota hai.">
+                   > Digitize your business to unlock extreme growth. I architect high-performance, professional Websites and native Mobile Applications (Android/iOS). Reduce manual overhead, capture online customers, and scale securely.
+                </p>
+                
+                <div class="flex flex-wrap gap-5 font-tech tracking-widest text-sm">
+                    <a href="#projects" class="bg-neon text-dark px-8 py-4 rounded border border-neon hover:bg-neon/80 hover:text-dark font-bold transition-all shadow-[0_0_20px_rgba(0,243,255,0.4)] tran uppercase" data-en="Initialize Portfolio" data-hi="Mera Kaam Dekhein">
+                        Initialize Portfolio
+                    </a>
+                    <a href="#contact" class="bg-dark text-neon border border-neon px-8 py-4 rounded hover:bg-neon/10 font-bold transition-all flex items-center gap-3 uppercase shadow-[inset_0_0_15px_rgba(0,243,255,0.1)]">
+                        <i class="fas fa-terminal"></i> <span class="tran" data-en="Connect Node" data-hi="Mujhe Contact Karein">Connect Node</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Graphic (HUD Terminal) -->
+            <div class="hidden md:flex justify-center relative z-10 p-8 drop-heavy-element natural-load" style="transition-delay: 0.6s;">
+                <div id="hello-bro-hero" class="hud-panel p-6 w-full max-w-md draggable-spinner shadow-[0_0_40px_rgba(0,243,255,0.2)]">
+                    <div class="flex justify-between items-center border-b border-neon/30 pb-3 mb-4 pointer-events-none">
+                        <div class="text-neon text-xs font-mono tracking-widest">HELLO_BRO // DEV_TERMINAL</div>
+                        <div class="flex gap-2">
+                            <div class="w-2 h-2 bg-neon/50"></div>
+                            <div class="w-2 h-2 bg-neon/80"></div>
+                            <div class="w-2 h-2 bg-neon animate-pulse"></div>
+                        </div>
+                    </div>
+                    <pre class="font-mono text-xs md:text-sm text-sky-300 leading-relaxed text-left pointer-events-none"><code><span class="text-emerald-400">root@dev</span>:<span class="text-blue-400">~</span>$ ./analyze_target.sh
+[+] Target: Khaleel Raza
+[+] Role: Full Stack Architect
+[+] Specialization: [
+      <span class="text-neon">"Web Applications"</span>,
+      <span class="text-neon">"Mobile APK / iOS"</span>,
+      <span class="text-neon">"Business Dashboards"</span>
+    ]
+[+] Mission: Digitize Offline Stores
+<span class="text-yellow-400">Hello Bro Modules Loading... 100%</span>
+[OK] System Ready. Executing deploy()...</code></pre>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Industries Serverd / Digitize Section -->
+    <section id="industries" class="max-w-7xl mx-auto px-6 py-20 border-t border-neon/20 relative">
+        <div class="data-readout top-2 right-6 assemble-element">SECTOR.MAPPING // 100%</div>
+        <div class="text-center mb-12 assemble-element">
+            <h4 class="text-2xl md:text-3xl font-tech font-bold text-neon mb-2 uppercase tracking-[0.2em] tran" data-en="We Develop For ALL Store Types" data-hi="Main Har Tarah Ki Dukaan Banata Hoon">
+                We Develop For ALL Store Types
+            </h4>
+            <p class="font-mono text-xs text-slate-400 uppercase tracking-widest tran" data-en="Any business, any shop, transformed into a powerful digital asset." data-hi="Koi bhi store ho, usey premium app aur website mein badal diya jayega.">
+                Any business, any shop, transformed into a powerful digital asset.
+            </p>
+        </div>
+        
+        <!-- Expanded Industries List -->
+        <div class="flex flex-wrap justify-center gap-4 text-sm mt-8 assemble-element">
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('kirana')"><i class="fas fa-store"></i> <span class="tran" data-en="Kirana & Grocery Stores" data-hi="Kirana & Grocery Stores">Kirana & Grocery Stores</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('supermarket')"><i class="fas fa-shopping-basket"></i> <span class="tran" data-en="Supermarkets & Marts" data-hi="Supermarkets & Marts">Supermarkets & Marts</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('pharmacy')"><i class="fas fa-pills"></i> <span class="tran" data-en="Pharmacies & Medical Stores" data-hi="Medical / Pharmacy">Pharmacies & Medical Stores</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('mobile')"><i class="fas fa-mobile-alt"></i> <span class="tran" data-en="Electronics & Mobile Shops" data-hi="Mobiles & Electronics">Electronics & Mobile Shops</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('hotel')"><i class="fas fa-hotel"></i> <span class="tran" data-en="Hotels & Resorts" data-hi="Hotels & Resorts">Hotels & Resorts</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('jewelry')"><i class="fas fa-gem"></i> <span class="tran" data-en="Jewelry Shops" data-hi="Jewelry Shops">Jewelry Shops</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('cafe')"><i class="fas fa-coffee"></i> <span class="tran" data-en="Cafes & Bakeries" data-hi="Cafes & Bakeries">Cafes & Bakeries</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('restaurant')"><i class="fas fa-hamburger"></i> <span class="tran" data-en="Restaurants & Fast Food" data-hi="Restaurants & Fast Food">Restaurants & Fast Food</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('clothing')"><i class="fas fa-shopping-bag"></i> <span class="tran" data-en="Clothing / Retail Shops" data-hi="Kapde Ki Dukaanein">Clothing / Retail Shops</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('hardware')"><i class="fas fa-tools"></i> <span class="tran" data-en="Hardware & Tools" data-hi="Hardware Stores">Hardware & Tools</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('realestate')"><i class="fas fa-building"></i> <span class="tran" data-en="Real Estate / Property" data-hi="Property Business">Real Estate / Property</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('clinic')"><i class="fas fa-heartbeat"></i> <span class="tran" data-en="Doctors & Clinics" data-hi="Doctors & Clinics">Doctors & Clinics</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('salon')"><i class="fas fa-cut"></i> <span class="tran" data-en="Salons & Tailoring" data-hi="Salons & Tailors">Salons & Tailoring</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('service')"><i class="fas fa-car-wash"></i> <span class="tran" data-en="Washing & Service Centers" data-hi="Washing & Service Centers">Washing & Service Centers</span></div>
+            <div class="tech-tag cursor-pointer hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(0,243,255,0.4)] transition-all" onclick="openIndustryModal('gym')"><i class="fas fa-dumbbell"></i> <span class="tran" data-en="Gyms & Fitness Centers" data-hi="Gyms & Fitness Centers">Gyms & Fitness Centers</span></div>
+            <!-- Catch-All -->
+            <div class="tech-tag border-neon text-white font-bold tracking-widest shadow-[0_0_15px_rgba(0,243,255,0.4)] cursor-pointer hover:bg-neon/20 transition-all" onclick="openIndustryModal('other')">
+                <i class="fas fa-plus-circle text-neon animate-pulse"></i> 
+                <span class="tran" data-en="AND ANY OTHER BUSINESS YOU HAVE!" data-hi="AUR HAR TARAH KA BUSINESS!">AND ANY OTHER BUSINESS YOU HAVE!</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects Portfolio (Interactive HUD Cards) -->
+    <section id="projects" class="max-w-7xl mx-auto px-6 py-24 border-t border-neon/20 relative">
+        <div class="data-readout top-2 left-6 assemble-element">DB.QUERY // PROJECTS.ALL</div>
+        <div class="mb-16 md:flex justify-between items-end assemble-element">
+            <div>
+                <h3 class="text-4xl md:text-5xl font-tech font-bold mb-4 text-white uppercase tracking-wider tran" data-en="Deployed <span class='text-neon'>Systems</span>" data-hi="Mera <span class='text-neon'>Kaam</span>">Deployed <span class="text-neon">Systems</span></h3>
+                <p class="text-slate-400 font-mono text-sm tran" data-en="Click on any module to access detailed architecture." data-hi="Kisi bhi project pe click karke uske professional features dekhein.">Click on any module to access detailed architecture.</p>
+            </div>
+            <div class="hidden md:flex items-center gap-2 font-tech text-neon tracking-widest text-sm">
+                STATUS: <span class="text-white">SECURE</span> <i class="fas fa-lock ml-2"></i>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            
+            <!-- YAS Bakery App -->
+            <div class="hud-panel p-8 assemble-element cursor-pointer hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all" onclick="openModal('yas-bakery')">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-14 h-14 bg-neon/10 rounded flex items-center justify-center border border-neon/30">
+                        <i class="fas fa-bread-slice text-2xl text-neon"></i>
+                    </div>
+                    <span class="border border-emerald-500/50 text-emerald-400 text-[10px] font-tech font-bold px-3 py-1 rounded bg-emerald-500/10 uppercase tracking-widest shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]">
+                        <span class="tran" data-en="Live App" data-hi="App Ready Hai">Live App</span>
+                    </span>
+                </div>
+                <h4 class="text-2xl font-tech font-bold text-white mb-2 uppercase">YAS Bakery App</h4>
+                <p class="text-slate-400 text-sm font-mono mb-6 leading-relaxed tran" data-en="A highly professional custom bakery application. Native APK with Points system, Order Tracking, Admin Dashboard & Menus." data-hi="Bakery store ke liye ek dum professional mobile App (APK). Jisme tracking, points, aur admin dashboard maujood hain.">
+                    A highly professional custom bakery application. Native APK with Points system, Order Tracking, Admin Dashboard & Menus.
+                </p>
+                <div class="text-neon font-tech font-bold text-sm flex items-center gap-2 uppercase tracking-widest">
+                    <span class="tran" data-en="View Photos & Details" data-hi="Photos Aur Features Dekhein">View Photos & Details</span> <i class="fas fa-chevron-right text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Hello Bro -->
+            <div class="hud-panel p-8 assemble-element cursor-pointer hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all" onclick="openModal('hello-bro')">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-14 h-14 bg-blue-500/10 rounded flex items-center justify-center border border-blue-500/30">
+                        <i class="fas fa-robot text-2xl text-blue-400"></i>
+                    </div>
+                    <span class="border border-yellow-500/50 text-yellow-500 text-[10px] font-tech font-bold px-3 py-1 rounded bg-yellow-500/10 uppercase tracking-widest flex items-center gap-2 shadow-[inset_0_0_10px_rgba(234,179,8,0.2)]">
+                        <span class="w-1.5 h-1.5 bg-yellow-500 animate-pulse"></span>
+                        <span class="tran" data-en="In Progress" data-hi="Kaam Chalu Hai">In Progress</span>
+                    </span>
+                </div>
+                <h4 class="text-2xl font-tech font-bold text-white mb-2 uppercase">Hello Bro AI</h4>
+                <p class="text-slate-400 text-sm font-mono mb-6 leading-relaxed tran" data-en="An advanced neural intelligence agent behaving like 'Hello Bro'. Automates heavy digital workflows for businesses." data-hi="Ek dum intelligent advanced AI agent 'Hello Bro' jo businesses ka automated kaam sambhalta hai.">
+                    An advanced neural intelligence agent behaving like 'Hello Bro'. Automates heavy digital workflows for businesses.
+                </p>
+                <div class="text-neon font-tech font-bold text-sm flex items-center gap-2 uppercase tracking-widest">
+                    <span class="tran" data-en="Access Data" data-hi="Features Dekhein">Access Data</span> <i class="fas fa-chevron-right text-xs"></i>
+                </div>
+            </div>
+
+            <!-- GrowFast SMM -->
+            <div class="hud-panel p-8 assemble-element cursor-pointer hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all" onclick="openModal('growfast')">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-14 h-14 bg-purple-500/10 rounded flex items-center justify-center border border-purple-500/30">
+                        <i class="fas fa-chart-line text-2xl text-purple-400"></i>
+                    </div>
+                    <span class="border border-emerald-500/50 text-emerald-400 text-[10px] font-tech font-bold px-3 py-1 rounded bg-emerald-500/10 uppercase tracking-widest shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]">
+                        <span class="tran" data-en="Completed" data-hi="Ready Hai">Completed</span>
+                    </span>
+                </div>
+                <h4 class="text-2xl font-tech font-bold text-white mb-2 uppercase">GrowFast SMM</h4>
+                <p class="text-slate-400 text-sm font-mono mb-6 leading-relaxed tran" data-en="A highly secure Social Media Marketing Reseller panel built for massive transaction volumes and API sync." data-hi="SMM followers/likes badhane ka superfast high-security dashboard panel.">
+                    A highly secure Social Media Marketing Reseller panel built for massive transaction volumes and API sync.
+                </p>
+                <div class="text-neon font-tech font-bold text-sm flex items-center gap-2 uppercase tracking-widest">
+                    <span class="tran" data-en="Access Data" data-hi="Features Dekhein">Access Data</span> <i class="fas fa-chevron-right text-xs"></i>
+                </div>
+            </div>
+
+            <!-- Magic Tools Suite -->
+            <div class="hud-panel p-8 assemble-element cursor-pointer hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all" onclick="openModal('magic')">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-14 h-14 bg-pink-500/10 rounded flex items-center justify-center border border-pink-500/30">
+                        <i class="fas fa-magic text-2xl text-pink-400"></i>
+                    </div>
+                    <span class="border border-emerald-500/50 text-emerald-400 text-[10px] font-tech font-bold px-3 py-1 rounded bg-emerald-500/10 uppercase tracking-widest shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]">
+                        <span class="tran" data-en="Web App" data-hi="Web App">Web App</span>
+                    </span>
+                </div>
+                <h4 class="text-2xl font-tech font-bold text-white mb-2 uppercase">Magic Tools</h4>
+                <p class="text-slate-400 text-sm font-mono mb-6 leading-relaxed tran" data-en="Complete browser-based studio suite. Includes background removal, passport crop, and image compress utilities." data-hi="Photo background remover aur passport size creator jaisay studio tools ek hi online jagah par.">
+                    Complete browser-based studio suite. Includes background removal, passport crop, and image compress utilities.
+                </p>
+                <div class="text-neon font-tech font-bold text-sm flex items-center gap-2 uppercase tracking-widest">
+                    <span class="tran" data-en="Access Data" data-hi="Features Dekhein">Access Data</span> <i class="fas fa-chevron-right text-xs"></i>
+                </div>
+            </div>
+
+            <!-- CraveBites Food App -->
+            <div class="hud-panel p-8 assemble-element cursor-pointer hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all" onclick="openModal('cravebites')">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-14 h-14 bg-orange-500/10 rounded flex items-center justify-center border border-orange-500/30">
+                        <i class="fas fa-hamburger text-2xl text-orange-400"></i>
+                    </div>
+                    <span class="border border-emerald-500/50 text-emerald-400 text-[10px] font-tech font-bold px-3 py-1 rounded bg-emerald-500/10 uppercase tracking-widest shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]">
+                        <span class="tran" data-en="Play Store" data-hi="Play Store">Play Store</span>
+                    </span>
+                </div>
+                <h4 class="text-2xl font-tech font-bold text-white mb-2 uppercase">CraveBites App</h4>
+                <p class="text-slate-400 text-sm font-mono mb-6 leading-relaxed tran" data-en="A high-performance premium food delivery application. Complete with live rider tracking and menus." data-hi="Swiggy/Zomato jaise high quality food delivery app. Isme customer apni delivery live map par track kar sakte hain.">
+                    A high-performance premium food delivery application. Complete with live rider tracking and menus.
+                </p>
+                <div class="text-neon font-tech font-bold text-sm flex items-center gap-2 uppercase tracking-widest">
+                    <span class="tran" data-en="View Photos & Details" data-hi="Photos Aur Features Dekhein">View Photos & Details</span> <i class="fas fa-chevron-right text-xs"></i>
+                </div>
+            </div>
+
+            <!-- RideGo Taxi App -->
+            <div class="hud-panel p-8 assemble-element cursor-pointer hover:shadow-[0_0_20px_rgba(0,243,255,0.4)] transition-all" onclick="openModal('ridego')">
+                <div class="flex justify-between items-start mb-6">
+                    <div class="w-14 h-14 bg-yellow-500/10 rounded flex items-center justify-center border border-yellow-500/30">
+                        <i class="fas fa-taxi text-2xl text-yellow-400"></i>
+                    </div>
+                    <span class="border border-emerald-500/50 text-emerald-400 text-[10px] font-tech font-bold px-3 py-1 rounded bg-emerald-500/10 uppercase tracking-widest shadow-[inset_0_0_10px_rgba(16,185,129,0.2)]">
+                        <span class="tran" data-en="Play Store" data-hi="Play Store">Play Store</span>
+                    </span>
+                </div>
+                <h4 class="text-2xl font-tech font-bold text-white mb-2 uppercase">RideGo Taxi Cab</h4>
+                <p class="text-slate-400 text-sm font-mono mb-6 leading-relaxed tran" data-en="Uber-clone ride-hailing infrastructure. Built to handle real-time geospatial queries for tracking." data-hi="Ola/Uber jaisa taxi aur cab booking system. Driver aur rider ke beech instant connection map tracking ke sath.">
+                    Uber-clone ride-hailing infrastructure. Built to handle real-time geospatial queries for tracking.
+                </p>
+                <div class="text-neon font-tech font-bold text-sm flex items-center gap-2 uppercase tracking-widest">
+                    <span class="tran" data-en="View Photos & Details" data-hi="Photos Aur Features Dekhein">View Photos & Details</span> <i class="fas fa-chevron-right text-xs"></i>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Connect / Contact Interface -->
+    <section id="contact" class="max-w-4xl mx-auto px-6 py-24 border-t border-neon/20 relative">
+        <div id="contact-box-panel" class="hud-panel p-10 md:p-16 text-center assemble-element relative overflow-hidden">
+            <h3 class="text-4xl font-tech font-bold mb-6 text-white uppercase tracking-widest tran" data-en="Initiate Connection" data-hi="Project Dijiye">Initiate Connection</h3>
+            <p class="text-slate-400 font-mono text-sm max-w-lg mx-auto mb-10 leading-relaxed tran" data-en="Ready to deploy your next application or digitize your business? Connect directly to my secure terminal below." data-hi="Kya aap apna agla store ya app banwana chahte hain? Neeche diye gaye secure buttons se contact karein.">
+                Ready to deploy your next application or digitize your business? Connect directly to my secure terminal below.
+            </p>
+            
+            <div class="flex flex-col md:flex-row justify-center gap-6">
+                <!-- Professional Email Button -->
+                <a href="mailto:razakhaleel0001@gmail.com?subject=Query%20for%20Website%2FApp%20Development&body=Hello%20Khaleel%20Sir%2C%0A%0AI%20saw%20your%20amazing%20portfolio%20and%20I%20would%20like%20to%20discuss%20building%20a%20professional%20website%2Fapp%20for%20my%20business.%20%0A%0APlease%20let%20me%20know%20when%20we%20can%20connect.%0A%0AThanks!" class="relative group bg-dark border border-slate-600 px-8 py-5 rounded overflow-hidden hover:border-neon transition-all">
+                    <div class="absolute inset-0 bg-neon/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    <div class="relative flex items-center justify-center gap-4 text-white">
+                        <i class="fas fa-envelope text-neon text-xl"></i>
+                        <div class="flex flex-col items-start font-mono text-xs">
+                            <span class="text-slate-500 tracking-widest uppercase">Email Protocol</span>
+                            <span class="font-bold tracking-wide text-sm">razakhaleel0001@gmail.com</span>
+                        </div>
+                    </div>
+                </a>
+                
+                <!-- Professional Phone Button -->
+                <a href="https://wa.me/919652241650?text=Hello%20Khaleel%20Sir%2C%0A%0AI%20saw%20your%20amazing%20portfolio%20and%20I%20want%20to%20develop%20a%20professional%20website%2Fapp%20for%20my%20business.%0A%0AAre%20you%20free%20to%20discuss%3F" target="_blank" class="relative group bg-dark border border-slate-600 px-8 py-5 rounded overflow-hidden hover:border-green-500 transition-all">
+                    <div class="absolute inset-0 bg-green-500/10 -translate-x-full group-hover:translate-x-0 transition-transform duration-300"></div>
+                    <div class="relative flex items-center justify-center gap-4 text-white">
+                        <i class="fas fa-phone-alt text-green-400 text-xl"></i>
+                        <div class="flex flex-col items-start font-mono text-xs">
+                            <span class="text-slate-500 tracking-widest uppercase">Secure Voice Line</span>
+                            <span class="font-bold tracking-wide text-sm">+91 9652241650</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-10 text-center border-t border-neon/30 bg-dark relative z-10 assemble-element">
+        <div class="data-readout bottom-4 left-1/2 -translate-x-1/2 text-[10px]">AUTH_OK // SESSION SECURE</div>
+        <p class="font-mono text-xs text-slate-500 uppercase tracking-widest">
+            &copy; 2026 Khaleel Raza. System Architect.
+        </p>
+    </footer>
+
+    <!-- HUD Modal System -->
+    <div id="projectModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-xl" onclick="closeModal()"></div>
+        
+        <div id="modalBox" class="hud-panel w-full max-w-3xl rounded-sm p-8 md:p-12 relative transform scale-95 opacity-0 transition-all duration-300 z-10 max-h-[95vh] overflow-y-auto">
+            
+            <button onclick="closeModal()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-neon/50 hover:text-neon border border-neon/30 hover:bg-neon/10 transition z-50 bg-dark">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+
+            <!-- Diagnostic Lines -->
+            <div class="absolute top-0 right-0 w-24 h-24 border-t border-r border-neon/30 pointer-events-none"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 border-b border-l border-neon/30 pointer-events-none"></div>
+
+            <div id="modalContent" class="relative z-10"></div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // --- IRON MAN CLICK RIPPLE ANIMATION ---
+        document.addEventListener('click', function(e) {
+            // Prevent ripple if clicking inside modal or specific buttons if needed, but hud-wide is fine
+            if(e.target.closest('#modalBox')) return; // Opt: disable inside modal
+            const ripple = document.createElement('div');
+            ripple.className = 'hud-click-ripple';
+            ripple.style.left = e.clientX + 'px';
+            ripple.style.top = e.clientY + 'px';
+            document.body.appendChild(ripple);
+            setTimeout(() => { ripple.remove(); }, 600);
+        });
+
+        // --- INTERSECTION OBSERVER FOR 2-WAY SCROLL ANIMATIONS ---
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.10 // Trigger when 10% visible
+        };
+
+        const scrollObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                // Ignore elements designated to load naturally on boot (Hero section)
+                if(entry.target.classList.contains('natural-load')) return;
+
+                if (entry.isIntersecting) {
+                    // element scrolled in (up or down)
+                    entry.target.classList.add('in-view');
+                    if(entry.target.id === 'contact-box-panel') {
+                        runContactAssembly();
+                    }
+                } else {
+                    // element scrolled out (leave screen) -> reset state for next time
+                    entry.target.classList.remove('in-view');
+                }
+            });
+        }, observerOptions);
+
+
+
+
+        // --- 3D INTERACTIVE SPINNER LOGIC (HERO TERMINAL) ---
+        const helloSpinner = document.getElementById('hello-bro-hero');
+        if (helloSpinner) {
+            let isDragging = false;
+            let startMouseX = 0;
+            let currentRotationZ = 0;
+            let lastMouseX = 0;
+            let momentumRotation = 0;
+
+            const onMouseDown = (e) => {
+                isDragging = true;
+                startMouseX = e.clientX || (e.touches && e.touches[0].clientX);
+                lastMouseX = startMouseX;
+                helloSpinner.style.transition = 'none'; // Instant follow on drag
+            };
+
+            const onMouseMove = (e) => {
+                if (!isDragging) return;
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                if (!clientX) return;
+                
+                const diffX = clientX - lastMouseX;
+                
+                // Drastic drag scaling to make it behave like a frictionless fidget spinner
+                momentumRotation = diffX * 2.5; 
+                currentRotationZ += momentumRotation;
+                
+                // Standard Z-axis rotate instead of 3D flip
+                helloSpinner.style.transform = `rotate(${currentRotationZ}deg)`; 
+                
+                lastMouseX = clientX;
+            };
+
+            const onMouseUp = () => {
+                if (!isDragging) return;
+                isDragging = false;
+                
+                // Set an extreme springy, bouncy transition
+                helloSpinner.style.transition = 'transform 2s cubic-bezier(0.2, 1.2, 0.3, 1.1)';
+                
+                // Snap EXACTLY back to 0, causing it to quickly "unwind" or "snap back" to upright position!
+                currentRotationZ = 0; 
+                helloSpinner.style.transform = `rotate(0deg)`;
+            };
+
+            helloSpinner.addEventListener('mousedown', onMouseDown);
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            // Mobile Touch Support
+            helloSpinner.addEventListener('touchstart', onMouseDown, {passive: true});
+            document.addEventListener('touchmove', onMouseMove, {passive: true});
+            document.addEventListener('touchend', onMouseUp);
+        }
+
+        // --- HACKER CYPHER REVEAL ANIMATION ---
+        function runDecryption() {
+            const hackerText = document.getElementById('hacker-name');
+            const finalWord = "KHALEEL RAZA'S";
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
+            let iterations = 0;
+            
+            const interval = setInterval(() => {
+                hackerText.innerText = finalWord.split('').map((letter, index) => {
+                    if (index < iterations) {
+                        return finalWord[index];
+                    }
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join('');
+                
+                if (iterations >= finalWord.length) {
+                    clearInterval(interval);
+                }
+                iterations += 1 / 4; // Tweak this for speed
+            }, 30);
+        }
+
+        // --- SPLASH SCREEN ENTRY LOGIC ---
+        function enterPortfolio() {
+            const splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            splash.style.transform = 'scale(1.1)'; // Reduced zoom out effect
+            
+            setTimeout(() => {
+                splash.style.display = 'none';
+                document.body.classList.remove('overflow-hidden'); // Restore scrolling
+                
+                // Trigger natural load for top elements (Navbar & Hero)
+                document.body.classList.add('site-active');
+                
+                // Trigger Ra.One Block Assembly for Hero Terminal
+                runRaOneAssembly();
+                
+                // Start observing all elements for 2-way scroll stagger
+                const elements = document.querySelectorAll('.assemble-element, .drop-element, .drop-heavy-element');
+                elements.forEach((el, index) => {
+                    // Force specific dynamic staggering for children inside grids to make it pop wildly 
+                    el.style.transitionDelay = (index % 4) * 0.15 + 's';
+                    scrollObserver.observe(el);
+                });
+            }, 700);
+        }
+
+        // --- RA.ONE BLOCK ASSEMBLY ANIMATION ---
+        function runRaOneAssembly() {
+            const devTerminal = document.getElementById('hello-bro-hero');
+            if(!devTerminal) return;
+            
+            // Set the devTerminal to spin into place like a fidget spinner
+            // We use standard rotate() for the Z-axis (steering wheel / fidget spinner entrance)
+            devTerminal.style.transform = 'rotate(-2880deg) scale(0.2)';
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'absolute inset-0 z-50 flex flex-wrap pointer-events-none rounded';
+            overlay.style.perspective = '1000px'; 
+            
+            // Hide terminal content during construction
+            const content = Array.from(devTerminal.children);
+            content.forEach(el => {
+                if(!el.classList.contains('absolute')) {
+                    el.style.opacity = '0';
+                    el.style.transition = 'opacity 0.6s ease-in';
+                }
+            });
+
+            // 10x10 grid for much smaller, more precise blocks
+            const gridCols = 10;
+            const gridRows = 10;
+            const totalBlocks = gridCols * gridRows; // 100 blocks
+            
+            for(let i = 0; i < totalBlocks; i++) {
+                const block = document.createElement('div');
+                block.className = 'bg-neon/90 border border-white/20 shadow-[0_0_15px_#00f3ff] transition-all transform';
+                block.style.width = `${100/gridCols}%`;
+                block.style.height = `${100/gridRows}%`;
+                
+                // Exploded starting positions (very scattered like digital dust)
+                const tx = (Math.random() - 0.5) * 1500; 
+                const ty = (Math.random() - 0.5) * 1500;
+                const tz = (Math.random() - 0.5) * 1000 + 400; 
+                
+                block.style.transform = `translate3d(${tx}px, ${ty}px, ${tz}px) scale(${1 + Math.random()*3})`;
+                block.style.opacity = '0';
+                
+                overlay.appendChild(block);
+                
+                // Animating in VERY slowly to match Ra.One build up (slow and heavy)
+                setTimeout(() => {
+                    block.style.transition = 'all 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    block.style.transform = 'translate3d(0,0,0) scale(1)';
+                    block.style.opacity = '1';
+                }, 200 + (Math.random() * 1500)); // Staggered over 1.7 seconds
+
+                // Melt away into the final UI
+                setTimeout(() => {
+                    block.style.transition = 'opacity 0.8s ease-out';
+                    block.style.opacity = '0';
+                    content.forEach(el => el.style.opacity = '1'); // Reveal real content
+                }, 2800 + (Math.random() * 500));
+            }
+            
+            devTerminal.appendChild(overlay);
+
+            // Execute the master Fidget Spinner Entrance (Z-axis spin)
+            // It spins violently while building, slowing down flawlessly into position
+            setTimeout(() => {
+                devTerminal.style.transition = 'transform 3.5s cubic-bezier(0.1, 0.9, 0.2, 1)'; 
+                devTerminal.style.transform = 'rotate(0deg) scale(1)';
+            }, 50);
+
+            // Show real content just as the blocks finish melting
+            setTimeout(() => {
+                content.forEach(el => {
+                    if(!el.classList.contains('absolute')) el.style.opacity = '1';
+                });
+            }, 2400);
+
+            // Cleanup overlay and reset CSS for subsequent interactions
+            setTimeout(() => {
+                overlay.remove();
+                devTerminal.style.transition = 'none'; // So the manual drag doesn't lag
+                devTerminal.style.transform = 'rotateX(0deg) rotateY(0deg)'; // Clean slate for 3D drag
+            }, 4000);
+        }
+
+        // --- RA.ONE CONTACT BOX FROM BOTTOM ANIMATION ---
+        function runContactAssembly() {
+            const contactBox = document.getElementById('contact-box-panel');
+            if (!contactBox || contactBox.dataset.assembled === 'true') return;
+            contactBox.dataset.assembled = 'true'; // Prevent running twice
+            
+            const overlay = document.createElement('div');
+            // Transparent background because the blocks will form the wall
+            overlay.className = 'absolute inset-0 z-50 flex flex-wrap pointer-events-none rounded overflow-hidden bg-transparent';
+            
+            // Hide terminal content during construction
+            const content = Array.from(contactBox.children);
+            content.forEach(el => {
+                if(!el.classList.contains('absolute')) {
+                    el.style.opacity = '0';
+                    el.style.transition = 'opacity 0.6s ease-in';
+                }
+            });
+
+            // 20x10 = 200 blocks. Big enough to look like tech cubes, small enough to perform well
+            const gridCols = 20;
+            const gridRows = 10;
+            const totalBlocks = gridCols * gridRows;
+            
+            for(let i = 0; i < totalBlocks; i++) {
+                const block = document.createElement('div');
+                // Style it exact color of the HUD panel with tiny inner borders
+                block.className = 'bg-[#030b14] border-t border-neon/30 shadow-[0_[-2px]_10px_rgba(0,243,255,0.4)] transition-all transform';
+                block.style.width = `${100/gridCols}%`;
+                block.style.height = `${100/gridRows}%`;
+                
+                // Exploded from WAY below to feel like heavy building
+                const ty = Math.random() * 800 + 400; // Rise from 400-1200px below
+                block.style.transform = `translateY(${ty}px) scale(0)`;
+                block.style.opacity = '0';
+                
+                overlay.appendChild(block);
+                
+                // Animating in - "niche se uthkar lagte jaenge bye van bye"
+                // Smooth, slow, irregular heavy delay matching earlier style
+                setTimeout(() => {
+                    block.style.transition = 'all 1.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                    block.style.transform = 'translateY(0) scale(1)';
+                    block.style.opacity = '1';
+                }, 100 + (Math.random() * 2000)); // Staggered over 2 full seconds
+
+                // Melt away into the final real solid box
+                setTimeout(() => {
+                    block.style.transition = 'opacity 0.8s ease-out';
+                    block.style.opacity = '0';
+                }, 3500 + (Math.random() * 500));
+            }
+            
+            // Temporarily make the box itself transparent so we only see the blocks forming
+            const originalBg = contactBox.style.backgroundColor;
+            contactBox.style.background = 'transparent';
+            contactBox.style.borderColor = 'transparent';
+            contactBox.style.boxShadow = 'none';
+            
+            contactBox.appendChild(overlay);
+            
+            // Reveal actual box content and restore box styles
+            setTimeout(() => {
+                contactBox.style.background = ''; // reset to stylesheet
+                contactBox.style.borderColor = '';
+                contactBox.style.boxShadow = '';
+                content.forEach(el => el.style.opacity = '1'); 
+            }, 3800);
+            
+            // Remove the blocks entirely
+            setTimeout(() => { overlay.remove(); }, 4500);
+        }
+        
+        // Trigger Hacker decryption roughly when page loads
+        window.addEventListener('load', () => { setTimeout(runDecryption, 500); });
+
+        // PWA Service Worker Registration
+        if('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(error => {
+                    console.log('SW Registration failed: ', error);
+                });
+            });
+        }
+
+        // Database for HUD Modals
+        const projectsData = {
+            'yas-bakery': {
+                icon: '<i class="fas fa-bread-slice text-neon"></i>',
+                titleEN: 'YAS.BAKERY_APP',
+                titleHI: 'YAS.BAKERY_APP',
+                badgeStyle: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+                statusEN: 'STATUS: DEPLOYED',
+                statusHI: 'STATUS: APP LIVE HAI',
+                descEN: 'A robust Native APK e-commerce application developed for YAS Bakery. The solution comprises two interfaces (Customer & Admin) ensuring a seamless end-to-end purchasing and management pipeline.',
+                descHI: 'YAS Bakery ke liye banayi gayi ek dum zabardast aur professional Native app (APK). Isme customer features aur Admin features dono shamil hain.',
+                images: [
+                    './yas-1.jpg',
+                    './yas-2.jpg',
+                    './yas-3.jpg',
+                    './yas-4.jpg'
+                ],
+                featuresEN: [
+                    'CUSTOMER: Clean Login (Email/Phone) & Profile Management.',
+                    'CUSTOMER: Interactive Loyalty Points & Rewards System.',
+                    'CUSTOMER: Live Order Tracking (e.g. Order arriving in 15 mins).',
+                    'CUSTOMER: Item-wise Rating & Review System (Thumbs Up/Down).',
+                    'ADMIN: Full Data Analytics (Total Orders, Revenue, Weekly Charts).',
+                    'ADMIN: Store Management (Add/Edit Menu Items, Adjust Store Hours & Status).',
+                    'ADMIN: Active Order Dispatching & Pending Task handling.'
+                ],
+                featuresHI: [
+                    'CUSTOMER SIDE: Aasan login aur profile. Points aur Rewards wala system.',
+                    'CUSTOMER SIDE: Order Tracking - Apni delivery ko live track karein.',
+                    'CUSTOMER SIDE: Ratings - Har item ki pasand/napasand ka review dena.',
+                    'ADMIN SIDE: Analytics - Total orders, aur kamai (revenue) ka chart aur data.',
+                    'ADMIN SIDE: Manage Menu - Naye bakery items app se hi upload karein aur price set karein.',
+                    'ADMIN SIDE: Store Control - Dukaan ON/OFF karein aur active orders manage karein.'
+                ]
+            },
+            'hello-bro': {
+                icon: '<i class="fas fa-robot text-neon"></i>',
+                titleEN: 'HELLO_BRO.AI_CORE',
+                titleHI: 'HELLO_BRO.AI_CORE',
+                badgeStyle: 'border-yellow-500 text-yellow-500 bg-yellow-500/10',
+                statusEN: 'STATUS: IN_DEVELOPMENT',
+                statusHI: 'STATUS: KAAM CHALU HAI',
+                descEN: 'Advanced neural automation software designed to function as a digital sibling "Hello Bro". Handles massive amounts of logic, client interaction, and data-entry simultaneously without fatigue.',
+                descHI: 'Apka digital bhai jiska naam "Hello Bro" hai. Hello Bro businesses ke liye repetitive kaam, email, aur client talk ko AI ki maddad se automatically handle karta hai.',
+                images: ['./hello.png', './hello_2.png'],
+                featuresEN: [
+                    'Natural Language Processing for human-like speech.',
+                    'Automated sequence handling (Data entry, scheduling).',
+                    'Multi-channel API integration for direct customer support.',
+                    'Learning algorithms adapt to individual business tones.'
+                ],
+                featuresHI: [
+                    'Natural Bhasha (Hindi/English) aasaani se samajhna.',
+                    'Data entry aur rozz ka schedule automatically manage karna.',
+                    'Direct customer se insaano ki tarah baat karke support dena.',
+                    'Business ki zaroorat ke hisaab se khud ko update karna.'
+                ]
+            },
+            'growfast': {
+                icon: '<i class="fas fa-network-wired text-neon"></i>',
+                titleEN: 'GROWFAST.SMM_PANEL',
+                titleHI: 'GROWFAST.SMM_PANEL',
+                badgeStyle: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+                statusEN: 'STATUS: DEPLOYED',
+                statusHI: 'STATUS: READY HAI',
+                descEN: 'High-frequency SMM dashboard capable of fetching APIs from multiple global providers. Features military-grade encryption for deposits and order handling.',
+                descHI: 'Social media growth ka superfast dashboard. Global APIs se direct connect karke safely hazaro order ek sath process karta hai.',
+                images: ['./growfast.png', './growfast_2.png'],
+                featuresEN: [
+                    'Mass order submission architecture.',
+                    'Automated API Provider syncing.',
+                    'Multi-gateway secure deposit system.',
+                    'Real-time status tracking for end-users.'
+                ],
+                featuresHI: [
+                    'Ek sath hazaro social orders place karne ki taqat.',
+                    'Doosre global panel APIs se auto sync karna.',
+                    'Secure deposit system (Multiple payment methods).',
+                    'Customers ko live tracking system dena.'
+                ]
+            },
+            'magic': {
+                icon: '<i class="fas fa-microchip text-neon"></i>',
+                titleEN: 'MAGIC_TOOLS.SYS',
+                titleHI: 'MAGIC_TOOLS.SYS',
+                badgeStyle: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+                statusEN: 'STATUS: DEPLOYED',
+                statusHI: 'STATUS: READY HAI',
+                descEN: 'Client-side heavy logic implementation for image manipulation. Compresses, crops, and removes backgrounds cleanly using raw WebAssembly and Canvas APIs.',
+                descHI: 'Professional photo editing aur manipulation tools. Passport size maker aur background remover bina internet upload kiye client par chalne wala system.',
+                images: ['./magic.png', './magic_2.png'],
+                featuresEN: [
+                    'Instant Background Removal via edge ML models.',
+                    'Smart auto-crop for official passport photographs.',
+                    'Zero latency image compression algorithms.'
+                ],
+                featuresHI: [
+                    'AI Background Remover - Bina kisi delay ke photo ka background saaf karna.',
+                    'Smart Crop - Passport photo auto adjust karna.',
+                    'Image Compressor - Photo ki quality loss kiye bina size chota karna.'
+                ]
+            },
+            'cravebites': {
+                icon: '<i class="fas fa-hamburger text-neon"></i>',
+                titleEN: 'CRAVEBITES_DELIVERY',
+                titleHI: 'CRAVEBITES_DELIVERY',
+                badgeStyle: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+                statusEN: 'STATUS: PLAY_STORE',
+                statusHI: 'STATUS: PLAY STORE PAR HAI',
+                descEN: 'A high-performance premium food delivery application. Complete with live rider tracking, restaurant menus, and seamless checkout experience.',
+                descHI: 'Swiggy/Zomato jaise high quality food delivery app. Isme customer apni delivery live map par track kar sakte hain.',
+                images: ['./food.png', './food_2.png'],
+                featuresEN: [
+                    'Live GPS tracking for delivery partners.',
+                    'Advanced order management for restaurants.',
+                    'Multiple payment gateways integrated natively.'
+                ],
+                featuresHI: [
+                    'Live GPS - Delivery boy kaha pahucha map par dekhein.',
+                    'Restaurant walo ke liye order accept karne ka panel.',
+                    'Har tarah ki online payment options.'
+                ]
+            },
+            'ridego': {
+                icon: '<i class="fas fa-taxi text-neon"></i>',
+                titleEN: 'RIDEGO_TAXI_CABS',
+                titleHI: 'RIDEGO_TAXI_CABS',
+                badgeStyle: 'border-emerald-500 text-emerald-400 bg-emerald-500/10',
+                statusEN: 'STATUS: PLAY_STORE',
+                statusHI: 'STATUS: PLAY STORE PAR HAI',
+                descEN: 'Uber-clone ride-hailing infrastructure. Built to handle real-time geospatial queries for instant driver-to-rider matching.',
+                descHI: 'Ola/Uber jaisa taxi aur cab booking system. Driver aur rider ke beech instant connection banti hai.',
+                images: ['./taxi.png', './taxi_2.png'],
+                featuresEN: [
+                    'Real-time cab map rendering and geospatial algorithms.',
+                    'Driver payout and commission management module.',
+                    'SOS and emergency tracking infrastructure.'
+                ],
+                featuresHI: [
+                    'Map par aas-paas ki taxi live dekhein.',
+                    'Driver ka commission aur payout ka hisab-kitab.',
+                    'Security ke liye emergency SOS button.'
+                ]
+            }
+        };
+
+        let currentLang = 'en';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'en' ? 'hi' : 'en';
+            const langBtnText = document.getElementById('langText');
+            langBtnText.innerText = currentLang === 'en' ? 'HINGLISH' : 'ENGLISH';
+
+            const translatables = document.querySelectorAll('.tran');
+            translatables.forEach(el => {
+                if(currentLang === 'en') {
+                    if(el.dataset.en) el.innerHTML = el.dataset.en;
+                } else {
+                    if(el.dataset.hi) el.innerHTML = el.dataset.hi;
+                }
+            });
+        }
+
+        // --- NEW FEATURE: INDUSTRY BENEFITS DATABASE ---
+        const industriesData = {
+            'kirana': {
+                icon: '<i class="fas fa-store text-emerald-400"></i>',
+                titleEN: 'Kirana & Grocery App Benefits',
+                titleHI: 'Kirana Store App Ke Fayde',
+                descEN: 'Digitize your Kirana store to sell local groceries online.',
+                descHI: 'Apni local kirana dukaan ko online le jaayein aur sales badhayein.',
+                featuresEN: [
+                    'Customers can order daily groceries directly from their phones.',
+                    'Keep track of your stock / inventory automatically.',
+                    'Send push notifications for offers on festivals to your local area.',
+                    'Provide home delivery tracking.'
+                ],
+                featuresHI: [
+                    'Log ghar baithe phone se grocery order kar sakenge.',
+                    'Store ka stock aur inventory phone pe manage karein.',
+                    'Festivals par offers ka notification direct bhejein.',
+                    'Home debelHI: 'Naye Online Order', val: '+450%', color: 'text-emerald-400' },
+                    { labelEN: 'Stock Waste', labelHI: 'Slivery manage karne wala system milega.'
+                ],
+                stats: [
+                    { labelEN: 'Online Sales', laamaan Kharab Hona', val: '-90%', color: 'text-rose-400' },
+                    { labelEN: 'Net Profit', labelHI: 'Dukaan Ka Munafa', val: '+180%', color: 'text-emerald-400' }
+                ]
+            },
+            'gym': {
+                icon: '<i class="fas fa-dumbbell text-blue-400"></i>',
+                titleEN: 'Gym & Fitness App Benefits',
+                titleHI: 'Gym App Banane Ke Fayde',
+                descEN: 'A complete management app for gym owners and fitness trainers.',
+                descHI: 'Gym owners aur trainers ke liye complete Digital Management.',
+                featuresEN: [
+                    'Members can track their daily attendance via QR code.',
+                    'Trainers can upload customized diet and workout plans.',
+                    'Automated SMS/App reminders for monthly fees.',
+                    'Live class booking for Yoga/Zumba sessions.'
+                ],
+                featuresHI: [
+                    'QR Code se gym members ki daily haziri lagegi.',
+                    'Trainers automatically Diet aur Workout chart bhej sakte hain.',
+                    'Fees ki due date aane par automatic Reminder jayega.',
+                    'Ek dum professional look jisse gym ki value badhegi.'
+                ],
+                stats: [
+                    { labelEN: 'Active Members', labelHI: 'Naye Gym Members', val: '+250%', color: 'text-emerald-400' },
+                    { labelEN: 'Missed Dues', labelHI: 'Baaki Fees Rukna', val: '-85%', color: 'text-rose-400' },
+                    { labelEN: 'Premium Plans', labelHI: 'Premium Plan Sales', val: '+300%', color: 'text-emerald-400' }
+                ]
+            },
+            'clothing': {
+                icon: '<i class="fas fa-shopping-bag text-pink-400"></i>',
+                titleEN: 'Retail & Clothing App Benefits',
+                titleHI: 'Kapde Ki Dukaan App Ke Fayde',
+                descEN: 'Take your fashion store to the next level with a boutique app.',
+                descHI: 'Apne fashion aur kapde ke store ki digital pehchan banayein.',
+                featuresEN: [
+                    'Showcase your latest clothing collections in a high-quality gallery.',
+                    'Accept online payments via UPI/Cards securely.',
+                    'Run Flash Sales and distribute Promo Codes.',
+                    'Track which clothing sizes are out of stock.'
+                ],
+                featuresHI: [
+                    'Apne naye kapdon ka collection premium photo gallery mein dikhayein.',
+                    'Log online UPI se direct payment karke kapde mangwa sakte hain.',
+                    'Festivals par Promo Code banakar sale badha sakte hain.',
+                    'Kaunsa size khatam ho gaya hai, uski report app mein milegi.'
+                ],
+                stats: [
+                    { labelEN: 'Out-of-City Orders', labelHI: 'Bahar Shahar Ke Orders', val: '+600%', color: 'text-emerald-400' },
+                    { labelEN: 'Dead Stock', labelHI: 'Fasa Hua Maal', val: '-70%', color: 'text-rose-400' },
+                    { labelEN: 'Brand Value', labelHI: 'Dukaan Ki Value', val: '10x', color: 'text-blue-400' }
+                ]
+            },
+            'restaurant': {
+                icon: '<i class="fas fa-hamburger text-orange-400"></i>',
+                titleEN: 'Restaurant & Cafe App Benefits',
+                titleHI: 'Restaurant/Cafe App Ke Fayde',
+                descEN: 'Stop paying hefty commissions to third-party delivery apps. Own your system.',
+                descHI: 'Swiggy/Zomato ke commission se bachein. Apna khud ka delivery system chalayein.',
+                featuresEN: [
+                    'Zero commission on your direct food orders.',
+                    'Digital QR code menus for table scanning.',
+                    'Live order statuses for kitchen staff.',
+                    'Loyalty points for regular customers.'
+                ],
+                featuresHI: [
+                    'Direct orders par kisi ko koi commission nahi dena padega.',
+                    'Tables par QR code lagayein jisse log menu dekh sakein.',
+                    'Kitchen staff ke liye live order dashboard.',
+                    'Roz aane wale customers ko loyalty points milenge.'
+                ],
+                stats: [
+                    { labelEN: 'Saved Commissions', labelHI: 'Zomato/Swiggy Bachat', val: '100%', color: 'text-emerald-400' },
+                    { labelEN: 'Direct Orders', labelHI: 'Seedhe Orders', val: '+300%', color: 'text-emerald-400' },
+                    { labelEN: 'Wait Time', labelHI: 'Customer Intazar', val: '-50%', color: 'text-rose-400' }
+                ]
+            },
+            'other': {
+                icon: '<i class="fas fa-cogs text-purple-400"></i>',
+                titleEN: 'Custom App Benefits',
+                titleHI: 'Kisi Bhi Business Ki App',
+                descEN: 'No matter what you sell, a digital system gives you complete control over your business.',
+                descHI: 'Aapka business chhe kuch bhi ho, ek app usey 10x professional bana deti hai.',
+                featuresEN: [
+                    'Looks extremely professional and builds brand trust.',
+                    'Reduces manual note taking and calculations.',
+                    'You get exact analytics on your profits and losses.',
+                    'Direct marketing channel to reach your customers anytime.'
+                ],
+                featuresHI: [
+                    'Aapka brand ekdum badi company jaisa professional lagega.',
+                    'Kagaz pen pe hisaab rakhne ka jhanjhat khatam.',
+                    'Munafa aur nuksan ka ekdum accurate data milega.',
+                    'Jab chahein, apne saare customers ko ek sath message bhejein.'
+                ]
+            }
+        };
+
+        // Fallback for industries not directly mocked above
+        const genericIndustryFallback = {
+            icon: '<i class="fas fa-rocket text-neon"></i>',
+            titleEN: 'Business Digitation Benefits',
+            titleHI: 'Business Ko Digital Karne Ke Fayde',
+            descEN: 'A customized application solution specifically architected for your operation.',
+            descHI: 'Aapke business ki zaroorat ke hisaab se bani hui special app.',
+            featuresEN: [
+                'Complete automation of daily business routines.',
+                'Beautiful UI/UX to attract modern customers.',
+                'Secure payment handling and invoice generation.',
+                'Customer feedback and rating systems.'
+            ],
+            featuresHI: [
+                'Business ke daily repetetive kamo ka automation.',
+                'Naye customers ko attract karne wala behtareen design.',
+                'Secure online payment, aur automatic bill banana.',
+                'Grahako ka feedback lene wala system.'
+            ]
+        };
+
+        function openIndustryModal(industryId) {
+            const data = industriesData[industryId] || genericIndustryFallback;
+            const modal = document.getElementById('projectModal');
+            const box = document.getElementById('modalBox');
+            const content = document.getElementById('modalContent');
+            
+            const title = currentLang === 'en' ? data.titleEN : data.titleHI;
+            const desc = currentLang === 'en' ? data.descEN : data.descHI;
+            const featureListTitle = currentLang === 'en' ? '>> WHY YOU NEED THIS?' : '>> APP BANWANE KE FAYDE';
+            const features = currentLang === 'en' ? data.featuresEN : data.featuresHI;
+            
+            // Build features list
+            let lis = '';
+            features.forEach(f => {
+                lis += `<li class="flex items-start gap-4 mb-4 font-tech tracking-wide text-sm">
+                            <i class="fas fa-check text-emerald-400 mt-1"></i>
+                            <span class="text-slate-300"> ${f}</span>
+                        </li>`;
+            });
+
+            // Generate Professional Crypto Candlestick Analytics Dashboard
+            const chartData = data.stats || [
+                { labelEN: 'Customer Reach', labelHI: 'Naye Customers', val: '+350%', color: 'text-emerald-400' },
+                { labelEN: 'Work Automation', labelHI: 'Kaam Aasan Hona', val: '+80%', color: 'text-blue-400' },
+                { labelEN: 'Monthly Profit', labelHI: 'Extra Kamayi', val: '+120%', color: 'text-emerald-400' },
+            ];
+            
+            // Build Crypto Candles Animation String
+            let candlesHtml = '';
+            const numCandles = window.innerWidth < 768 ? 14 : 22; // Responsive number of blocks
+            let prevClose = 20; 
+            for(let i=0; i<numCandles; i++) {
+                // Crypto trend going UP overall!
+                const trend = (i / numCandles) * 40; 
+                let open = prevClose;
+                let close = Math.max(10, Math.min(90, open + (Math.random() * 30 - 10) + trend));
+                
+                // Final massive green dildos
+                if(i > numCandles - 4) {
+                    close = open + (Math.random() * 20 + 20);
+                }
+                if (close > 95) close = 95;
+
+                const isGreen = close >= open;
+                const colorClass = isGreen ? 'bg-emerald-500' : 'bg-rose-500';
+                const shadowClass = isGreen ? 'shadow-[0_0_8px_#10b981]' : 'shadow-[0_0_8px_#f43f5e]';
+                
+                const height = Math.abs(close - open) + 2; 
+                const high = Math.min(100, Math.max(open, close) + Math.random() * 10);
+                const low = Math.max(0, Math.min(open, close) - Math.random() * 10);
+                const bottomPos = Math.min(open, close);
+                
+                candlesHtml += `
+                    <div class="relative flex-1 flex justify-center h-full items-end group">
+                        <div class="absolute w-[1px] ${colorClass} opacity-40 crypto-candle" style="bottom: ${low}%; height: ${high - low}%; animation: cryptoRise 1s ease-out forwards; animation-delay: ${0.2 + (i * 0.05)}s;"></div>
+                        <div class="absolute w-full max-w-[12px] ${colorClass} ${shadowClass} rounded-[1px] crypto-candle" 
+                             style="bottom: ${bottomPos}%; height: ${height}%; animation: cryptoRise 1.5s cubic-bezier(0.1, 0.8, 0.2, 1) forwards; animation-delay: ${0.3 + (i * 0.05)}s;"></div>
+                    </div>
+                `;
+                prevClose = close;
+            }
+
+            let statsHtml = '';
+            chartData.forEach(stat => {
+                const label = currentLang === 'en' ? stat.labelEN : stat.labelHI;
+                statsHtml += `
+                    <div class="text-center p-2 bg-slate-800/40 rounded border border-slate-700/50">
+                        <div class="text-[9px] md:text-[10px] text-slate-400 font-mono uppercase tracking-wider mb-1 leading-tight line-clamp-2">${label}</div>
+                        <div class="text-xs md:text-sm font-bold font-tech ${stat.color} drop-shadow-[0_0_5px_currentColor]">${stat.val}</div>
+                    </div>
+                `;
+            });
+
+            let chartHtml = `
+            <div class="mt-8 mb-10 p-4 bg-[#0a0f18] border border-slate-800 rounded-lg shadow-xl relative overflow-hidden">
+                <!-- Grid lines -->
+                <div class="absolute inset-0 z-0 flex flex-col justify-between opacity-10 pointer-events-none p-4">
+                    <div class="border-b border-neon w-full h-px"></div>
+                    <div class="border-b border-neon w-full h-px"></div>
+                    <div class="border-b border-neon w-full h-px"></div>
+                    <div class="border-b border-neon w-full h-px"></div>
+                </div>
+                
+                <!-- Title -->
+                <div class="relative z-10 flex justify-between items-center mb-6">
+                    <h4 class="text-[10px] md:text-xs font-tech font-bold text-slate-300 tracking-widest uppercase flex items-center">
+                        <i class="fab fa-bitcoin text-yellow-500 mr-2 text-sm"></i> ${currentLang === 'en' ? 'Projected App Market Growth' : 'App Ka Market Growth Data'}
+                    </h4>
+                    <span class="text-emerald-500 text-[9px] font-mono bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded flex items-center gap-1">LIVE <i class="fas fa-circle animate-pulse text-[6px]"></i></span>
+                </div>
+                
+                <!-- The Crypto Candlestick Chart Area -->
+                <div class="relative z-10 h-28 md:h-36 w-full flex items-end justify-between px-1 pb-4 border-b-2 border-slate-700 space-x-[2px] md:space-x-1">
+                    ${candlesHtml}
+                </div>
+                
+                <!-- The customized Stats below the chart -->
+                <div class="relative z-10 grid grid-cols-3 gap-2 mt-4 pt-2">
+                   ${statsHtml}
+                </div>
+            </div>`;
+
+            content.innerHTML = `
+                <div class="flex items-center gap-6 mb-8 border-b border-neon/30 pb-6 pr-8">
+                    <div class="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-dark border border-neon rounded-sm flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                        ${data.icon}
+                    </div>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-tech font-bold text-white tracking-widest uppercase text-shadow-neon shadow-neon">${title}</h3>
+                        <div class="inline-flex mt-3 px-3 py-1 border border-neon text-neon text-[10px] bg-neon/10 font-mono tracking-widest uppercase">
+                            RECOMMENDED SOLUTION
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-neon/80 text-sm font-mono leading-relaxed mb-8 pl-4 border-l-2 border-neon">
+                    /* ${desc} */
+                </p>
+                
+                ${chartHtml}
+                
+                <h4 class="text-lg font-tech font-bold text-white mb-6 tracking-widest uppercase">${featureListTitle}</h4>
+                <ul class="text-left text-neon/90">
+                    ${lis}
+                </ul>
+                
+                <!-- Call to action button inside modal -->
+                <div class="mt-8 pt-6 border-t border-neon/20">
+                    <a href="#contact" onclick="closeModal()" class="inline-block bg-neon text-dark font-bold font-tech px-6 py-2 rounded shadow-[0_0_15px_rgba(0,243,255,0.4)] hover:bg-white transition uppercase">
+                        ${currentLang === 'en' ? 'Discuss My Project' : 'Apne Kaam Ki Baat Karein'}
+                    </a>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('modal-active');
+            
+            setTimeout(() => {
+                box.classList.remove('opacity-0', 'scale-95');
+                box.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function openModal(projectId) {
+            const data = projectsData[projectId];
+            const modal = document.getElementById('projectModal');
+            const box = document.getElementById('modalBox');
+            const content = document.getElementById('modalContent');
+            
+            const title = currentLang === 'en' ? data.titleEN : data.titleHI;
+            const status = currentLang === 'en' ? data.statusEN : data.statusHI;
+            const desc = currentLang === 'en' ? data.descEN : data.descHI;
+            const featureListTitle = currentLang === 'en' ? '>> ARCHITECTURE_FEATURES' : '>> APP_KI_KHAABIYAAN';
+            const features = currentLang === 'en' ? data.featuresEN : data.featuresHI;
+            
+            // Generate Features List
+            let lis = '';
+            features.forEach(f => {
+                lis += `<li class="flex items-start gap-4 mb-4 font-tech tracking-wide text-sm">
+                            <i class="fas fa-angle-right text-neon mt-1"></i>
+                            <span class="text-slate-300"> ${f}</span>
+                        </li>`;
+            });
+
+            // Generate Images Layout if they exist
+            let imagesHtml = '';
+            if (data.images && data.images.length > 0) {
+                imagesHtml = `
+                    <h4 class="text-lg font-tech font-bold text-white mb-2 mt-8 tracking-widest uppercase">>> VISUAL_DATA (SCREENSHOTS)</h4>
+                    <div class="flex gap-4 overflow-x-auto py-4 snap-x border-y border-neon/20 mb-6 bg-dark/50 p-4">
+                `;
+                data.images.forEach((img, index) => {
+                    // Fallback to a placeholder if the user hasn't put the image files in the right place yet
+                    imagesHtml += `<img src="${img}" alt="Screenshot ${index+1}" class="h-[400px] w-auto rounded border border-neon/40 object-contain snap-center shrink-0 shadow-[0_0_15px_rgba(0,243,255,0.1)]" onerror="this.src='https://via.placeholder.com/300x500/030b14/00f3ff?text=Insert+Image+Here'">`;
+                });
+                imagesHtml += `
+                    </div>
+                `;
+            }
+            
+            // Generate Play Store Badge
+            let playStoreBtnHtml = '';
+            if (status.includes('PLAY') || status.includes('LIVE') || status.includes('READY')) {
+                playStoreBtnHtml = `
+                    <div class="mt-10 mb-2">
+                        <a href="#projects" onclick="closeModal()" class="inline-flex items-center gap-4 bg-black hover:bg-slate-900 border border-slate-700 hover:border-emerald-500 transition-all px-6 py-2 rounded-lg cursor-pointer max-w-fit shadow-[0_0_20px_rgba(0,0,0,0.8)]">
+                            <i class="fab fa-google-play text-3xl text-emerald-500"></i>
+                            <div class="text-left font-sans">
+                                <div class="text-[9px] text-slate-300 uppercase tracking-widest font-semibold">GET IT ON</div>
+                                <div class="text-xl text-white font-bold tracking-tight">Google Play</div>
+                            </div>
+                        </a>
+                    </div>
+                `;
+            }
+
+            content.innerHTML = `
+                <div class="flex items-center gap-6 mb-8 border-b border-neon/30 pb-6 pr-8">
+                    <div class="w-16 h-16 md:w-20 md:h-20 shrink-0 bg-dark border border-neon rounded-sm flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(0,243,255,0.2)]">
+                        ${data.icon}
+                    </div>
+                    <div>
+                        <h3 class="text-2xl md:text-3xl font-tech font-bold text-white tracking-widest uppercase text-shadow-neon shadow-neon">${title}</h3>
+                        <div class="inline-flex mt-3 px-3 py-1 border ${data.badgeStyle} text-[10px] font-mono tracking-widest uppercase">
+                            ${status}
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-neon/80 text-sm font-mono leading-relaxed mb-10 pl-4 border-l-2 border-neon">
+                    /* ${desc} */
+                </p>
+                
+                ${imagesHtml}
+                
+                <h4 class="text-lg font-tech font-bold text-white mb-6 tracking-widest uppercase">${featureListTitle}</h4>
+                <ul class="text-left text-neon/90">
+                    ${lis}
+                </ul>
+                
+                ${playStoreBtnHtml}
+            `;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('modal-active');
+            
+            setTimeout(() => {
+                box.classList.remove('opacity-0', 'scale-95');
+                box.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('projectModal');
+            const box = document.getElementById('modalBox');
+            
+            box.classList.remove('opacity-100', 'scale-100');
+            box.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.remove('modal-active');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+</body>
+</html>
